@@ -27,14 +27,6 @@ Features onboarding, authentication, dynamic category browsing, product listings
 - Custom Theme (`theme.js`)
 - Centralized API (`api.js`)
 
----
-
-## 📂 Structure
-
-
-
----
-
 ## 🚀 Setup
 ```bash
 # Install dependencies
