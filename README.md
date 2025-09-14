@@ -36,12 +36,6 @@ yarn install
 
 # Start development server
 npx expo start
-```
 
 
 
-
-
----
-
-If you want, I can also add a **short diagram** showing the navigation flow from onboarding to checkout so your README is even clearer for new developers. Would you like me to do that?
