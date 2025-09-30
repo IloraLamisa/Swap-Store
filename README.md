@@ -30,8 +30,6 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 
 ## 📸 Screenshots
 
-> Replace `screenshot1.png`, `screenshot2.png` with your actual uploaded file names.
-
 <p align="center">
   <img src="assets/screenshots/screenshot1.png" alt="Home Screen" width="250" />
   <img src="assets/screenshots/screenshot3.png" alt="Product Listing" width="250" />
@@ -42,8 +40,6 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 ---
 
 ## 🎥 Demo Video
-
-> Replace `demo.mp4` with your actual uploaded video file name.
 
 <p align="center">
   <video src="assets/demo/demo.mp4" width="300" controls></video>
