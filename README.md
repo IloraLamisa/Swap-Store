@@ -31,10 +31,10 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/ss1.png" alt="Home Screen" width="150" />
-  <img src="assets/ss2.png" alt="profile" width="150" />
-  <img src="assets/ss3.png" alt="order" width="150" />
-  <img src="assets/ss4.png" alt="category" width="150" />
+  <img src="assets/ss1.jpg" alt="Home Screen" width="150" />
+  <img src="assets/ss2.jpg" alt="profile" width="150" />
+  <img src="assets/ss3.jpg" alt="order" width="150" />
+  <img src="assets/ss4.jpg" alt="category" width="150" />
 </p>
 
 ---
@@ -42,7 +42,7 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 ## 🎥 Demo Video
 
 <p align="center">
-  <video src="assets/demo.mp4" width="300" controls></video>
+  <video src="assets/vdo.mp4" width="300" controls></video>
 </p>
 
 ---
@@ -54,6 +54,12 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 npm install
 # or
 yarn install
+```
 
-# Start development server
-npx expo start
+
+## License
+
+This project is licensed under the [LICENSE NAME] License. See the `LICENSE` file for details.
+
+
+
