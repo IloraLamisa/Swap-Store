@@ -31,10 +31,10 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/screenshot1.png" alt="Home Screen" width="250" />
-  <img src="assets/screenshots/screenshot3.png" alt="Product Listing" width="250" />
-  <img src="assets/screenshots/screenshot3.png" alt="Product Listing" width="250" />
-  <img src="assets/screenshots/screenshot4.png" alt="Product Listing" width="250" />
+  <img src="assets/ss1.png" alt="Home Screen" width="150" />
+  <img src="assets/ss2.png" alt="profile" width="150" />
+  <img src="assets/ss3.png" alt="order" width="150" />
+  <img src="assets/ss4.png" alt="category" width="150" />
 </p>
 
 ---
@@ -42,7 +42,7 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 ## 🎥 Demo Video
 
 <p align="center">
-  <video src="assets/demo/demo.mp4" width="300" controls></video>
+  <video src="assets/demo.mp4" width="300" controls></video>
 </p>
 
 ---
