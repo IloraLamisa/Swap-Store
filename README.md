@@ -39,13 +39,6 @@ The app provides a smooth shopping experience with onboarding, authentication, d
 
 ---
 
-## 🎥 Demo Video
-
-<p align="center">
-  <video src="assets/vdo.mp4" width="150" controls></video>
-</p>
-
----
 
 ## 🚀 Setup & Installation
 
