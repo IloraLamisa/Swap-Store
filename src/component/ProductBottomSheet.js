@@ -1,5 +1,5 @@
 // src/components/ProductBottomSheet.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,22 +13,58 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, fonts } from '../theme';
-import { PRODUCTS } from '../../assets/data/Products';
+// import { PRODUCTS } from '../../assets/data/Products';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../context/CartContext';
+import { getProducts } from '../api';
 
 const { height, width } = Dimensions.get('window');
 
 export default function ProductBottomSheet({ visible, productId, onClose, onBack }) {
+  console.log("productId", productId);
   const navigation = useNavigation();
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [product, setProduct] = useState();
+  const [images, setImages] = useState();
+  const [loading, setLoading] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
 
-  const product = PRODUCTS.find(p => p.id === productId);
-  if (!product) return null;
+  console.log("product", product);
 
-  const images = product.images || [product.image];
+  const fetchCategoryProducts = async () => {
+    try {
+      setLoading(true);
+      const products = await getProducts();
+
+      const filtered = products.find(p => p.id == productId);
+
+      setImages(filtered?.image1);
+
+      setProduct(filtered);
+
+      // setOnSaleProducts(
+      //   filtered.filter(
+      //     (p) => p.on_sale === true || (p.discount && p.discount > 0)
+      //   )
+      // );
+    } catch (err) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryProducts();
+  }, [productId]);
+
+
+  // const product = PRODUCTS.find(p => p.id === productId);
+  // if (!product) return null;
+
+  // const images = product.images || [product.image];
 
   const onScroll = (e) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / width);
@@ -58,35 +94,41 @@ export default function ProductBottomSheet({ visible, productId, onClose, onBack
 
           <ScrollView
             showsVerticalScrollIndicator={false}
-            
+
           >
-           
+
             {/* IMAGE CAROUSEL */}
-       <View style={styles.imageContainer}>
-         <FlatList
-           data={images.slice(0, 5)}  // ✅ ensures only first 5 images are used
-           keyExtractor={(item, index) => index.toString()}
-           horizontal
-           pagingEnabled
-           showsHorizontalScrollIndicator={false}
-           onScroll={onScroll}
-           scrollEventThrottle={16}
-           snapToAlignment="center"
-           renderItem={({ item }) => (
-      <View style={styles.imageWrapper}>
-        <Image
-          source={item}
-          style={styles.image}
-          resizeMode="contain"
-                  />
-                </View>
-              )}
-            />
+            <View style={styles.imageContainer}>
+              {/* <FlatList
+                data={images}
+                keyExtractor={(item, index) => index.toString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                snapToAlignment="center"
+                renderItem={({ item }) => (
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={item}
+                      style={styles.image}
+                      resizeMode="contain"
+                    />
+                  </View>
+                )}
+              /> */}
+
+              <Image
+                source={{ uri: images }} // Wrap the URL in { uri: ... }
+                style={styles.image}
+                resizeMode="contain"
+              />
             </View>
 
             {/* dots */}
             <View style={styles.dots}>
-              {images.slice(0, 5).map((_, i) => (
+              {/* {images.slice(0, 5).map((_, i) => (
                 <View
                   key={i}
                   style={[
@@ -94,26 +136,36 @@ export default function ProductBottomSheet({ visible, productId, onClose, onBack
                     { backgroundColor: i === activeIndex ? colors.primary : colors.dotInactive },
                   ]}
                 />
-              ))}
+              ))} */}
             </View>
-            
+
 
             {/* NAME + STATUS */}
             <View style={styles.topRow}>
-              <Text style={styles.name}>{product.name}</Text>
+              <Text style={styles.name}>{product?.productname}</Text>
               <Text style={styles.inStock}>In Stock</Text>
             </View>
 
             {/* PRICE + RATING */}
-            
-              <Text style={styles.price}>Price- {product.price}৳</Text>
-            <Text style={styles.rating}>⭐ {product.rating} Reviews</Text>
+
+            <Text style={styles.price}>Price- {product?.mrp}৳</Text>
+            <Text style={styles.rating}>⭐ {product?.rating} Reviews</Text>
             {/* COLOR OPTIONS */}
+
             <View style={styles.optionRow}>
               <Text style={styles.optionLabel}>Select Color</Text>
               <View style={styles.colorRow}>
-                <View style={[styles.colorSwatch, { backgroundColor: '#000', borderColor: colors.primary }]} />
-                <View style={[styles.colorSwatch, { backgroundColor: '#fff' }]} />
+                {["#000", "#fff"].map((color) => (
+                  <TouchableOpacity
+                    key={color}
+                    onPress={() => setSelectedColor(color)}
+                    style={[
+                      styles.colorSwatch,
+                      { backgroundColor: color },
+                      selectedColor === color && { borderColor: "blue", borderWidth: 2 },
+                    ]}
+                  />
+                ))}
               </View>
             </View>
 
@@ -133,7 +185,7 @@ export default function ProductBottomSheet({ visible, productId, onClose, onBack
 
             {/* DESCRIPTION */}
             <Text style={styles.label}>Description</Text>
-            <Text style={styles.desc}>{product.description}</Text>
+            <Text style={styles.desc}>{product?.description}</Text>
 
             {/* ADD TO CART BUTTON */}
             <TouchableOpacity style={styles.button} onPress={handleAddToCart}>
@@ -172,16 +224,17 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     backgroundColor: colors.lightpink,
-    height: 250,
+    height: 200,
     borderRadius: 16,
     marginHorizontal: spacing.xl,
     overflow: 'hidden',
   },
   image: {
-    width: width,
-    height: 250,
-position:'relative'
+    width: "100%",
+    height: 200,
+    position: 'relative'
   },
+
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -205,7 +258,7 @@ position:'relative'
     fontFamily: fonts.medium,
     fontSize: 14,
     color: colors.textDark,
-    
+
   },
   colorRow: { flexDirection: 'row', alignItems: 'center' },
   colorSwatch: {
@@ -213,7 +266,7 @@ position:'relative'
     height: 28,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "#ccc",
     marginLeft: spacing.sm,
   },
   qtyControls: {
@@ -249,13 +302,13 @@ position:'relative'
     fontFamily: fonts.bold,
     fontSize: 12,
     color: colors.primary,
-    marginHorizontal:spacing.xl,
+    marginHorizontal: spacing.xl,
   },
   rating: {
     fontFamily: fonts.medium,
     fontSize: 12,
     color: colors.textDark,
-    marginHorizontal:spacing.xl,
+    marginHorizontal: spacing.xl,
   },
   label: {
     fontFamily: fonts.semiBold,
@@ -269,8 +322,8 @@ position:'relative'
     fontFamily: fonts.medium,
     fontSize: 14,
     color: colors.textDark,
-    
-    
+
+
   },
   desc: {
     fontFamily: fonts.regular,
@@ -287,9 +340,9 @@ position:'relative'
     marginHorizontal: spacing.xl,
     alignItems: 'center',
     marginTop: spacing.md,
-    marginBottom:2,
+    marginBottom: 20,
   },
-  
+
   btnText: {
     fontFamily: fonts.semiBold,
     fontSize: 16,

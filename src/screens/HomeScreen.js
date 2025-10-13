@@ -1,6 +1,6 @@
 // src/screens/HomeScreen.js
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -16,39 +16,101 @@ import {
 } from 'react-native';
 import { colors, spacing, fonts } from '../theme';
 
-import BannerCarousel       from '../component/BannerCarousel';
-import CategoryGrid         from '../component/CategoryGrid';
-import ProductCard          from '../component/ProductCard';
-import ProductBottomSheet   from '../component/ProductBottomSheet';
-import FooterTabs           from '../component/FooterTabs';
-import { POPULAR }          from   '../../assets/data/popular';
-import { banners }          from   '../../assets/data/banner';
-import { categories }       from   '../../assets/data/categoriesIcon';
-import MenuScreen           from './MenuScreen';
-import { categories } from '../data/categoryIcons';
-import CategoryGrid from '../components/CategoryGrid';
+import BannerCarousel from '../component/BannerCarousel';
+import CategoryGrid from '../component/CategoryGrid';
+import ProductCard from '../component/ProductCard';
+import ProductBottomSheet from '../component/ProductBottomSheet';
+import FooterTabs from '../component/FooterTabs';
+// import { POPULAR } from '../../assets/data/popular';
+import { banners } from '../../assets/data/banner';
+// import { categories } from '../../assets/data/categoriesIcon';
+import MenuScreen from './MenuScreen';
+import { getProducts } from '../api';
+// import { categories } from '../data/categoryIcons';
+// import CategoryGrid from '../components/CategoryGrid';
 
 
 
 
 export default function HomeScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('Home');
-  const [selected, setSelected]   = useState(null);
+  const [selected, setSelected] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
 
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log("categories", categories);
+  // Fetch categories from API
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://fitback.shop/demo1Category/');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      // Assuming the API returns an array of categories
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        // If the API returns an object with categories property
+        setCategories(data.categories || data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setError(err.message);
+      Alert.alert('Error', 'Failed to load categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [allProducts, setAllProducts] = useState([]);
+  const [loadingTwo, setLoadingTwo] = useState(true);
+
+  const fetchCategoryProducts = async () => {
+    try {
+      setLoadingTwo(true);
+      const products = await getProducts();
+
+
+
+      setAllProducts(products);
+
+    } catch (err) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setLoadingTwo(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryProducts();
+  }, []);
+
   const openProduct = (item) => {
-  setSelected(item.id); // store the product ID instead of object
-  setSheetVisible(true);
-};
+    setSelected(item.id); // store the product ID instead of object
+    setSheetVisible(true);
+  };
 
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content"
-      backgroundColor="transparent"
-      translucent />
+        backgroundColor="transparent"
+        translucent />
 
       {/* HEADER */}
       <View style={styles.header}>
@@ -66,9 +128,9 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
 
-        <TouchableOpacity onPress={() => setMenuVisible(true)}>
-            <Text style={styles.menuText}>⋮</Text>
-           </TouchableOpacity>
+        <TouchableOpacity style={styles.menuIcon} onPress={() => setMenuVisible(true)}>
+          <Text style={styles.menuText}>⋮</Text>
+        </TouchableOpacity>
 
 
       </View>
@@ -77,18 +139,18 @@ export default function HomeScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.content}>
         <BannerCarousel banners={banners} />
 
-  {/* category */}
-       <CategoryGrid
-  items={categories}
-  onPress={(cat) =>
-    navigation.navigate('CategoryProducts', { categoryName: cat.title })
-  }
-/>
+        {/* category */}
+        <CategoryGrid
+          items={categories}
+          onPress={(cat) =>
+            navigation.navigate('CategoryProductsScreen', { categoryName: cat.name, categoryId: cat.id })
+          }
+        />
 
 
         <Text style={styles.sectionTitle}>Popular Products 🔥</Text>
         <FlatList
-          data={POPULAR}
+          data={allProducts.slice(0, 4)}
           keyExtractor={i => i.id}
           numColumns={2}
           columnWrapperStyle={styles.productRow}
@@ -101,20 +163,20 @@ export default function HomeScreen({ navigation }) {
       </ScrollView>
 
       {/* BOTTOM SHEET + TABS */}
-<ProductBottomSheet
-  visible={sheetVisible}
-  productId={selected}
-  onClose={() => setSheetVisible(false)}
-  onBack={() => setSheetVisible(false)}
-/>
+      <ProductBottomSheet
+        visible={sheetVisible}
+        productId={selected}
+        onClose={() => setSheetVisible(false)}
+        onBack={() => setSheetVisible(false)}
+      />
 
 
 
       <MenuScreen
-  visible={menuVisible}
-  onClose={() => setMenuVisible(false)}
-  navigation={navigation}
-/>
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        navigation={navigation}
+      />
 
 
       <FooterTabs active={activeTab} onChange={setActiveTab} />
@@ -133,11 +195,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     paddingTop: StatusBar.currentHeight || spacing.md,
-        
+
   },
   logo: {
-    width: 65,
-    height: 65,
+    width: 75,
+    height: 75,
   },
   searchWrap: {
     flex: 1,
@@ -153,14 +215,15 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fonts.regular,
     color: colors.text,
-    position:'absolute',
-    paddingLeft:spacing.md,
+    position: 'absolute',
+    paddingLeft: spacing.md,
   },
   menuText: {
-    fontSize: 24,
+    fontSize: 26,
     color: colors.primary,
     fontFamily: fonts.bold,
-    height: 35,
+    // height: 35,
+    // backgroundColor: "red"
   },
   content: {
     paddingBottom: spacing.lg + 60, // leave space for footer tabs

@@ -84,7 +84,7 @@ export default function ClothingScreen({ navigation }) {
         <Text style={styles.headerTitle}>Clothing</Text>
 
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => { }}
           style={styles.headerIcon}
           activeOpacity={0.7}
         >

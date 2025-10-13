@@ -23,28 +23,35 @@ export default function Login({ navigation }) {
       Alert.alert('Error', 'Please enter phone number and PIN');
       return;
     }
+    console.log("phone", phone, "pin", pin);
     try {
-      const users = await getUserProfiles(); // ✅ use API service
+      const users = await getUserProfiles();
+
       const match =
         Array.isArray(users) &&
         users.find(
           (u) =>
-            String(u.phone).trim() === String(phone).trim() &&
-            String(u.pin).trim() === String(pin).trim()
+            String(u.phonenumber).trim() === String(phone).trim() &&
+            String(u.password).trim() === String(pin).trim()
         );
 
       if (!match) {
-        Alert.alert('Login Failed', 'Invalid phone or PIN');
+        Alert.alert("Login Failed", "Invalid phone or PIN");
         return;
       }
 
-      await AsyncStorage.setItem('userId', String(match.id));
+      // Save logged in user
+      await AsyncStorage.setItem("loginUser", JSON.stringify(match));
+      await AsyncStorage.setItem("userId", String(match.id));
       await AsyncStorage.setItem('user', JSON.stringify(match));
 
-      navigation.replace('HomeScreen');
+      console.log("Login Success:", match);
+      navigation.replace("HomeScreen");
     } catch (err) {
-      Alert.alert('Error', err.message);
+      Alert.alert("Error", err.message);
     }
+
+
   };
 
   return (

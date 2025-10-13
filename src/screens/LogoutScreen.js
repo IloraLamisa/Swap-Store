@@ -12,7 +12,7 @@ import { colors, spacing, fonts } from '../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-export default function LogoutBottomSheet({ visible, navigation,onCancel }) {
+export default function LogoutBottomSheet({ visible, navigation, onCancel }) {
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.container}>
@@ -25,27 +25,28 @@ export default function LogoutBottomSheet({ visible, navigation,onCancel }) {
         <View style={styles.sheet}>
           <Text style={styles.title}>Logout</Text>
           <Text style={styles.subtitle}>Are you sure you want to logout?</Text>
-         
+
 
           <View style={styles.row}>
-            <TouchableOpacity style={[styles.btn, styles.btnGhost]} onPress={() => navigation.replace('HomeScreen')}>
+            <TouchableOpacity style={[styles.btn, styles.btnGhost]} onPress={onCancel}>
               <Text style={styles.btnGhostText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-  style={[styles.btn, styles.btnPrimary]}
-  onPress={async () => {
-   await AsyncStorage.multiRemove([
-  'userId',
-  'user',
-  'userName',
-  'userPhone'
-]);
+              style={[styles.btn, styles.btnPrimary]}
+              onPress={async () => {
+                await AsyncStorage.multiRemove([
+                  'userId',
+                  'loginUser',
+                  'user',
+                  'userName',
+                  'userPhone'
+                ]);
 
-    navigation.replace('Login1');
-  }}
->
-  <Text style={styles.btnPrimaryText}>Logout</Text>
-</TouchableOpacity>
+                navigation.replace('Login1');
+              }}
+            >
+              <Text style={styles.btnPrimaryText}>Logout</Text>
+            </TouchableOpacity>
 
           </View>
         </View>
@@ -61,7 +62,8 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: '#ba1e9830',
+    // backgroundColor: '#00000030',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   sheet: {
@@ -72,7 +74,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
     height: '233',
 
-    
+
   },
   title: {
     fontFamily: fonts.semiBold,
@@ -81,7 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'center',
     marginBottom: spacing.md,
-    
+
   },
   subtitle: {
     marginTop: spacing.xs,
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.md,
   },
-  
+
   row: {
     flexDirection: 'row',
     marginTop: spacing.xl,
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
   btnGhostText: {
     fontFamily: fonts.medium,
     color: colors.primary,
-    fontSize: 20,
+    fontSize: 16,
   },
   btnPrimary: {
     backgroundColor: colors.primary,
@@ -117,6 +119,6 @@ const styles = StyleSheet.create({
   btnPrimaryText: {
     fontFamily: fonts.medium,
     color: colors.white,
-    fontsize: 20,
+    fontSize: 16,
   },
 });

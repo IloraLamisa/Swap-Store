@@ -21,7 +21,7 @@ export default function WelcomeTemplate({ activeIndex, onContinue }) {
       <Image source={require('../../assets/welcome1.png')} style={styles.gifts} />
 
       {/* Text */}
-      
+
       <Text style={styles.subtitle}>{textStrings.subtitle}</Text>
 
       {/* Navigation Dots */}
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
-    
+
   },
   logo: {
     width: 230,
@@ -60,14 +60,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginBottom: spacing.sm,
   },
- 
+
   gifts: {
     width: 361,
     height: 283,
     resizeMode: 'contain',
     marginBottom: spacing.md,
   },
- 
+
   subtitle: {
     fontSize: 16,
     color: colors.textDark,
@@ -86,15 +86,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   arrow: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 30,
     backgroundColor: colors.primary,
     alignItems: 'center',
   },
   arrowText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 26,
     justifyContent: 'center',
     fontFamily: 'Poppins-Bold',
     fontWeight: 'bold',

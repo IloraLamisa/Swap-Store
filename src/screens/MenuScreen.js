@@ -1,6 +1,6 @@
 // src/screens/MenuScreen.js
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   View,
@@ -18,6 +18,8 @@ import {
 import { colors, spacing, fonts } from '../theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './HomeScreen';
+import LogoutBottomSheet from './LogoutScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PANEL_WIDTH = 303;
 const PANEL_HEIGHT = 676;
@@ -29,8 +31,35 @@ export default function MenuScreen({
   top = 0,
   right = 0,
 }) {
+
+  const [loginUser, setLoginUser] = useState();
+  console.log("loginUser", loginUser);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Try to get user data from AsyncStorage first
+        const loginUserString = await AsyncStorage.getItem('loginUser');
+        if (loginUserString) {
+          const loginUser = JSON.parse(loginUserString);
+          setLoginUser(loginUser);
+        }
+
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load user data');
+        console.error('Error loading data:', error);
+      } finally {
+      }
+    };
+
+    loadData();
+  }, []);
+
+
   const slideX = useRef(new Animated.Value(PANEL_WIDTH + right)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // State for logout modal
 
   useEffect(() => {
     if (visible) {
@@ -142,7 +171,7 @@ export default function MenuScreen({
   ];
 
   return (
-    
+    <>
       <Modal
         visible={visible}
         transparent
@@ -174,10 +203,11 @@ export default function MenuScreen({
             ]}
           >
             {/* Close Icon */}
-            <TouchableOpacity 
-            style={styles.closeButton} 
-            onPress={() => navigation.navigate()} 
-            activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              // onPress={() => navigation.navigate()}
+              onPress={() => onClose()}
+              activeOpacity={0.7}>
 
               <Ionicons name="close" size={24} color={colors.primary} />
             </TouchableOpacity>
@@ -185,11 +215,21 @@ export default function MenuScreen({
 
             {/* Profile */}
             <View style={styles.profileSection}>
-              <Image
+              {/* <Image
                 source={require('../../assets/LadyProfile.png')}
                 style={styles.profileImage}
+              /> */}
+
+              <Image
+                source={
+                  loginUser?.image
+                    ? { uri: user.image }
+                    : require('../../assets/user.png')
+                }
+                style={styles.profileImage}
               />
-              <Text style={styles.profileName}>Sophia Rose</Text>
+
+              <Text style={styles.profileName}>{loginUser?.name}</Text>
             </View>
 
             {/* Menu Items */}
@@ -201,7 +241,7 @@ export default function MenuScreen({
                 activeOpacity={0.7}>
 
 
-              
+
                 <Image source={icon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>{label}</Text>
               </TouchableOpacity>
@@ -215,8 +255,7 @@ export default function MenuScreen({
             <Pressable
               style={styles.logoutButton}
               onPress={() => {
-                onClose();
-                navigation.replace('LogoutScreen');
+                setShowLogoutModal(true); // Show logout modal
               }}
             >
               <Image
@@ -228,14 +267,27 @@ export default function MenuScreen({
           </Animated.View>
         </View>
       </Modal>
-    
+
+      {/* Logout Modal */}
+      <LogoutBottomSheet
+        visible={showLogoutModal}
+        navigation={navigation}
+        onCancel={() => setShowLogoutModal(false)} // Close the modal
+        onConfirm={() => {
+          setShowLogoutModal(false); // Close the modal
+          onClose(); // Close the sidebar
+          // Add your logout logic here
+        }}
+      />
+    </>
+
   );
 }
 
 const styles = StyleSheet.create({
-  
+
   backdrop: {
-     ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFillObject,
     flex: 1,
     backgroundColor: colors.backdrop,
     justifyContent: 'flex-end',
@@ -247,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
-    
+
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -262,7 +314,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: spacing.md,
+    top: 40,
     left: spacing.md,
     zIndex: 1,
     color: colors.primary,
@@ -274,12 +326,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.muted,
-    borderBottomWidth:.5,
+    borderBottomWidth: .5,
     paddingBottom: spacing.lg,
   },
   profileImage: {
-    width: 68,
-    height: 68,
+    width: 80,
+    height: 80,
     borderRadius: 40,
     marginBottom: spacing.md,
   },
@@ -302,7 +354,7 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontFamily: fonts.medium,
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textDark,
     marginLeft: spacing.md,
   },
@@ -330,7 +382,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontFamily: fonts.medium,
-    fontSize: 18,
+    fontSize: 14,
     color: colors.lightpink,
     marginLeft: spacing.sm,
   },

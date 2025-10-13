@@ -11,15 +11,19 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, fonts } from '../theme';
-import { getUserProfile } from '../api'; // ✅ central API service
+import MenuScreen from './MenuScreen';
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
+  const [loginUser, setLoginUser] = useState({});
+  const [menuVisible, setMenuVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchUserProfile = async () => {
     try {
@@ -31,34 +35,84 @@ export default function ProfileScreen({ navigation }) {
         return;
       }
 
-    const storedName = await AsyncStorage.getItem('userName');
-const storedPhone = await AsyncStorage.getItem('userPhone');
+      // Fetch fresh data from API
+      const response = await fetch(`https://fitback.shop/demo1UserProfile/${userId}`);
 
-const data = await getUserProfile(userId);
-setUser({
-  ...data,
-  name: storedName || data?.name || data?.full_name,
-  phone: storedPhone || data?.phone,
-});
-
-
-      
-      if (data?.name || data?.full_name) {
-        await AsyncStorage.setItem('userName', data.name || data.full_name);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      if (data?.phone) {
-        await AsyncStorage.setItem('userPhone', data.phone);
+
+      const userData = await response.json();
+
+      // Update state with API data
+      setUser(userData);
+
+      // Update AsyncStorage with fresh data
+      await AsyncStorage.setItem('loginUser', JSON.stringify(userData));
+
+      // Also update individual fields for compatibility
+      if (userData.name) {
+        await AsyncStorage.setItem('userName', userData.name);
       }
+      if (userData.phonenumber) {
+        await AsyncStorage.setItem('userPhone', userData.phonenumber);
+      }
+
     } catch (err) {
-      Alert.alert('Error', err.message);
+      console.error('Error fetching user profile:', err);
+
+      // Fallback to AsyncStorage data if API fails
+      try {
+        const loginUserString = await AsyncStorage.getItem('loginUser');
+        if (loginUserString) {
+          const loginUserData = JSON.parse(loginUserString);
+          setUser(loginUserData);
+        } else {
+          Alert.alert('Error', 'Failed to load profile data. Please try again.');
+        }
+      } catch (parseError) {
+        Alert.alert('Error', 'Failed to load profile data.');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const loadStoredData = async () => {
+    try {
+      const loginUserString = await AsyncStorage.getItem('loginUser');
+      if (loginUserString) {
+        const loginUserData = JSON.parse(loginUserString);
+        setLoginUser(loginUserData);
+        setUser(loginUserData); // Set initial data from storage
+      }
+    } catch (error) {
+      console.error('Error loading stored data:', error);
     }
   };
 
   useEffect(() => {
+    // Load stored data first for immediate display
+    loadStoredData();
+    // Then fetch fresh data from API
     fetchUserProfile();
   }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchUserProfile();
+  };
+
+  if (loading && !user) {
+    return (
+      <SafeAreaView style={[styles.safe, styles.center]}>
+        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -76,58 +130,77 @@ setUser({
 
         <Text style={styles.headerTitle}>Profile</Text>
 
-        <TouchableOpacity onPress={() => {}} style={styles.headerIcon} activeOpacity={0.7}>
-          <Text style={styles.menuText}>⋮</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={() => setMenuVisible(true)}
+            style={styles.headerIcon}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.menuText}>⋮</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      // refreshControl={
+      //   <RefreshControl
+      //     refreshing={refreshing}
+      //     onRefresh={handleRefresh}
+      //     colors={[colors.primary]}
+      //     tintColor={colors.primary}
+      //   />
+      // }
+      >
+        {/* PROFILE IMAGE */}
+        <View style={styles.profileCard}>
+          <Image
+            source={
+              user?.image
+                ? { uri: user.image }
+                : require('../../assets/user.png')
+            }
+            style={styles.profileImage}
+          />
+          <Text style={styles.profileName}>{user?.name || 'User'}</Text>
+          <Text style={styles.profilePhone}>{user?.phonenumber || ''}</Text>
         </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {/* PROFILE IMAGE */}
-          <View style={styles.profileCard}>
-            <Image
-              source={
-                user?.profile_image
-                  ? { uri: user.profile_image }
-                  : user?.image
-                  ? { uri: user.image }
-                  : require('../../assets/user.png')
-              }
-              style={styles.profileImage}
-            />
-          </View>
 
-          {/* DETAILS */}
-          <View style={styles.detailsContainer}>
-            {[
-              { label: 'Full Name', value: user?.name || user?.full_name || '' },
-              { label: 'Mobile Number', value: user?.phone || '' },
-              { label: 'Email Address', value: user?.email || '' },
-              { label: 'Address', value: user?.address || '' },
-              { label: 'Gender', value: user?.gender || '' },
-              { label: 'Age', value: user?.age != null ? String(user.age) : '' },
-            ].map((item, index) => (
-              <View style={styles.detailsRow} key={index}>
-                <Text style={styles.label}>{item.label}</Text>
-                <Text style={styles.value}>{item.value}</Text>
-              </View>
-            ))}
-          </View>
+        {/* DETAILS */}
+        <View style={styles.detailsContainer}>
+          {[
+            { label: 'Full Name', value: user?.name || 'Not set' },
+            { label: 'Mobile Number', value: user?.phonenumber || 'Not set' },
+            { label: 'Email Address', value: user?.email || 'Not set' },
+            { label: 'Address', value: user?.address || 'Not set' },
+            { label: 'Gender', value: user?.gender || 'Not set' },
+            { label: 'Age', value: user?.age ? String(user.age) : 'Not set' },
+            { label: 'City', value: user?.city || 'Not set' },
+            { label: 'Occupation', value: user?.occupation || 'Not set' },
+          ].map((item, index) => (
+            <View style={styles.detailsRow} key={index}>
+              <Text style={styles.label}>{item.label}</Text>
+              <Text style={styles.value}>{item.value}</Text>
+            </View>
+          ))}
+        </View>
 
-          {/* UPDATE BUTTON */}
-          <TouchableOpacity
-            style={styles.updateButton}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('EditProfile', { user })}
-          >
-            <Text style={styles.updateText}>Update</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      )}
+        {/* UPDATE BUTTON */}
+        <TouchableOpacity
+          style={styles.updateButton}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('EditProfile', { user })}
+        >
+          <Text style={styles.updateText}>Update Profile</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <MenuScreen
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 }
@@ -137,32 +210,69 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontFamily: fonts.regular,
+    color: colors.textDark,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     marginTop: spacing.xl,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  refreshButton: {
+    padding: spacing.sm,
+    marginRight: spacing.xs,
+  },
   headerIcon: {
-    padding: spacing.md,
+    padding: spacing.sm,
   },
   headerTitle: {
-    flex: 1,
-    textAlign: 'center',
     fontFamily: fonts.semiBold,
     fontSize: 18,
     color: colors.primary,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
   },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    marginTop: spacing.xl,
+  },
+  headerIcon: { padding: spacing.md },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: fonts.medium,
+    fontSize: 18,
+    color: colors.primary,
+  },
+
   menuText: {
     fontSize: 24,
     color: colors.primary,
     fontFamily: fonts.bold,
-    height: 35,
   },
   content: {
     padding: spacing.md,
     paddingTop: 0,
+    paddingBottom: spacing.xl,
   },
   profileCard: {
     alignItems: 'center',
@@ -177,10 +287,21 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   profileImage: {
-    width: 124,
-    height: 134,
-    borderRadius: 48,
-    marginTop: spacing.sm,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: spacing.md,
+  },
+  profileName: {
+    fontFamily: fonts.semiBold,
+    fontSize: 18,
+    color: colors.textDark,
+    marginBottom: spacing.xs,
+  },
+  profilePhone: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: colors.textMuted,
   },
   detailsContainer: {
     backgroundColor: colors.white,
@@ -196,31 +317,33 @@ const styles = StyleSheet.create({
   detailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
+    alignItems: 'flex-start',
   },
   label: {
     fontFamily: fonts.bold,
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textDark,
+    flex: 1,
   },
   value: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textDark,
+    flex: 1,
+    textAlign: 'right',
   },
   updateButton: {
     backgroundColor: colors.primary,
-    padding: spacing.sm,
+    padding: spacing.md,
     borderRadius: 12,
     alignSelf: 'center',
-    width: 120,
-    height: 36,
-    justifyContent: 'center',
+    minWidth: 150,
+    alignItems: 'center',
   },
   updateText: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
+    fontFamily: fonts.medium,
+    fontSize: 14,
     color: colors.white,
-    textAlign: 'center',
   },
 });

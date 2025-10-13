@@ -11,20 +11,48 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, fonts } from '../theme';
-import { useCart } from '../context/CartContext'; 
+import { useCart } from '../context/CartContext';
 
 export default function CheckoutScreen({ navigation }) {
-  const { items, changeQty } = useCart(); 
+  const { items, changeQty } = useCart();
+  console.log("items", items);
+
   const [delivery, setDelivery] = React.useState('Regular');
   const [coupon, setCoupon] = React.useState('');
 
+  // const subtotal = useMemo(
+  //   () => items.reduce((sum, it) => sum + it.price * it.qty, 0),
+  //   [items]
+  // );
+
   const subtotal = useMemo(
-    () => items.reduce((sum, it) => sum + it.price * it.qty, 0),
+    () => items.reduce((sum, item) => {
+      // Calculate discounted price for each item
+      const mrp = Number(item.mrp || item.price);
+      // const discount = Number(item.discount || 0);
+      // const discountedPrice = mrp - (mrp * discount / 100);
+
+      // Add to total: discounted price * quantity
+      return sum + (mrp * item.qty);
+    }, 0),
     [items]
   );
+
+  const totalDiscount = useMemo(
+    () => items.reduce((sum, item) => {
+      const mrp = Number(item.mrp || item.price);
+      const discountPercent = Number(item.discount || 0);
+      const discountAmountPerItem = mrp * (discountPercent / 100); // Discount per single item
+      return sum + (discountAmountPerItem * item.qty); // Total discount for all quantities
+    }, 0),
+    [items]
+  );
+
+
   const shipping = delivery === 'Regular' ? 50 : 100;
-  const discount = 100;
-  const total = subtotal + shipping - discount;
+  const discount = totalDiscount;
+
+  const total = (subtotal - discount) + shipping;
 
   return (
     <View style={styles.container}>
@@ -62,11 +90,11 @@ export default function CheckoutScreen({ navigation }) {
         {items.map((it) => (
           <View key={it.id} style={styles.itemCard}>
             <View style={styles.imageview}>
-              <Image source={it.image} style={styles.itemImage} resizeMode="contain" />
+              <Image source={it.image1 ? { uri: it.image1 } : ""} style={styles.itemImage} resizeMode="contain" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.itemName}>{it.name}</Text>
-              <Text style={styles.itemPrice}>{it.price}৳</Text>
+              <Text style={styles.itemName}>{it.productname}</Text>
+              <Text style={styles.itemPrice}>{it.mrp}৳</Text>
               <View style={styles.qtyRow}>
                 <TouchableOpacity
                   style={styles.qtyBtn}
@@ -199,17 +227,19 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 2 },
     elevation: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 4
 
-   
+
   },
-  imageview:{
-    backgroundColor:colors.lightpink,
-    borderRadius:16,
-     width: 158,
+  imageview: {
+    backgroundColor: colors.lightpink,
+    borderRadius: 16,
+    width: 158,
     height: 96,
-    alignContent:'center'
-  
-  
+    alignContent: 'center'
+
+
   },
   itemImage: {
     width: 160,
@@ -219,34 +249,34 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     fontSize: 14,
     color: colors.textDark,
-    marginLeft:spacing.md,
+    marginLeft: spacing.md,
   },
   itemPrice: {
     marginTop: spacing.sm,
     fontFamily: fonts.semiBold,
     fontSize: 14,
     color: colors.primary,
-    marginLeft:spacing.md,
+    marginLeft: spacing.md,
 
   },
   qtyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.md,
-    marginHorizontal:spacing.xl,
-    backgroundColor:colors.lightpink,
-    width:95,
-    borderRadius:16
+    marginHorizontal: spacing.xl,
+    backgroundColor: colors.lightpink,
+    width: 95,
+    borderRadius: 16
 
   },
   qtyBtn: {
     width: 30,
     height: 30,
     borderRadius: 6,
-    
+
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf:'center'
+    alignSelf: 'center'
   },
   qtyBtnText: {
     color: colors.textDark,

@@ -21,7 +21,10 @@ import ProductBottomSheet from '../component/ProductBottomSheet';
 import { getProducts } from '../api';
 
 export default function CategoryProductsScreen({ navigation, route }) {
-  const { categoryName } = route.params || {};
+  const { categoryName, categoryId } = route.params || {};
+
+  // console.log("categoryName", categoryName);
+
   const [allProducts, setAllProducts] = useState([]);
   const [onSaleProducts, setOnSaleProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,11 +47,17 @@ export default function CategoryProductsScreen({ navigation, route }) {
       setLoading(true);
       const products = await getProducts();
 
+      // const filtered = products.filter(
+      //   (p) =>
+      //     p.category?.toLowerCase() === categoryName.toLowerCase() ||
+      //     p.category_name?.toLowerCase() === categoryName.toLowerCase()
+      // );
+
       const filtered = products.filter(
         (p) =>
-          p.category?.toLowerCase() === categoryName.toLowerCase() ||
-          p.category_name?.toLowerCase() === categoryName.toLowerCase()
+          p.category == categoryId
       );
+
 
       setAllProducts(filtered);
       setOnSaleProducts(

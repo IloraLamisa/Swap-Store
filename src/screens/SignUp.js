@@ -28,19 +28,22 @@ export default function SignUp({ navigation }) {
     try {
       const data = await createUserProfile({
         name: fullName,
-        phone: phone,
-        pin: pin,
+        phonenumber: phone,
+        password: pin,
       });
 
-      if (data?.id) {
-        await AsyncStorage.setItem('userId', String(data.id));
-        await AsyncStorage.setItem('user', JSON.stringify(data));
-        await AsyncStorage.setItem('userName', fullName);
-  await AsyncStorage.setItem('userPhone', phone);
+      console.log(data?.id);
 
+      if (data?.id) {
+        await AsyncStorage.setItem('userName', fullName);
+        await AsyncStorage.setItem('userPhone', phone);
+
+        await AsyncStorage.setItem("loginUser", JSON.stringify(data));
+        await AsyncStorage.setItem("userId", String(data.id));
+        await AsyncStorage.setItem('user', JSON.stringify(data));
       }
 
-      Alert.alert('Success', 'Account created successfully');
+      // Alert.alert('Success', 'Account created successfully');
       navigation.replace('HomeScreen');
     } catch (err) {
       Alert.alert('Error', err.message);

@@ -68,6 +68,12 @@ export default function HomemadeScreen({ navigation }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <CategoryGrid
+  onPress={(cat) =>
+    navigation.navigate('CategoryProducts', { categoryName: cat.name })
+  }
+/>
+
         {/* All Homemade Section */}
         <Text style={styles.sectionTitle}>Popular Products🔥</Text>
         <FlatList

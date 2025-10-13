@@ -15,7 +15,8 @@ const NUM_COLS = 5;
 const ITEM_SIZE =
   (width - spacing.xl * 2 - spacing.md * (NUM_COLS - 1)) / NUM_COLS;
 
-export default function CategoryGrid({ items = [], onPress = () => {} }) {
+export default function CategoryGrid({ items = [], onPress = () => { } }) {
+  // console.log("items", items);
   return (
     <View style={styles.container}>
       {items.map((cat) => (
@@ -28,11 +29,9 @@ export default function CategoryGrid({ items = [], onPress = () => {} }) {
           <View style={styles.iconWrap}>
             <Image
               source={
-                cat.icon
-                  ? cat.icon // local PNG asset from your list
-                  : cat.image
-                  ? { uri: cat.image } // API-provided image if present
-                  : require('../../assets/default-category.png')
+                cat.image
+                  ? { uri: cat.image } // Use { uri: URL } for remote images
+                  : require('../../assets/CategoryIcon/Electronics.png')
               }
               style={styles.icon}
               resizeMode="contain"

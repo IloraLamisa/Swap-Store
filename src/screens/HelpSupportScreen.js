@@ -1,5 +1,5 @@
 // src/screens/HelpSupportScreen.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,52 +10,55 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, fonts } from '../theme';
+import MenuScreen from './MenuScreen';
 
 export default function HelpSupportScreen({ navigation }) {
+  const [menuVisible, setMenuVisible] = useState(false);
+
   return (
     <ScrollView style={styles.container} >
       {/* HEADER */}
-            <View style={styles.header}>
-              <TouchableOpacity
-                onPress={() => navigation.goBack()}
-                style={styles.headerIcon}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="arrow-back" size={24} color={colors.primary} />
-              </TouchableOpacity>
-      
-              <Text style={styles.headerTitle}>Help & Support</Text>
-      
-              <TouchableOpacity
-                onPress={() => navigation.navigate('')}
-                style={styles.headerIcon}
-                activeOpacity={0.7}
-              >
-               <Text style={styles.menuText}>⋮</Text>
-              </TouchableOpacity>
-            </View>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.headerIcon}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>Help & Support</Text>
+
+        <TouchableOpacity
+          onPress={() => setMenuVisible(true)}
+          style={styles.headerIcon}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.menuText}>⋮</Text>
+        </TouchableOpacity>
+      </View>
       {/* CONTACT INFO SECTION */}
       <View style={styles.contactSection}>
         <Text style={styles.contactTitle}>Contact Information</Text>
         <Text style={styles.contactSubtitle}>Say something to start a live chat!</Text>
 
         {/* Contact Details — stacked */}
-<View style={styles.infoBlock}>
-  <Ionicons name="call" size={22} color={colors.white} style={styles.infoIconCentered} />
-  <Text style={styles.infoTextCentered}>+1012 3456 789</Text>
-</View>
+        <View style={styles.infoBlock}>
+          <Ionicons name="call" size={22} color={colors.white} style={styles.infoIconCentered} />
+          <Text style={styles.infoTextCentered}>+1012 3456 789</Text>
+        </View>
 
-<View style={styles.infoBlock}>
-  <Ionicons name="mail" size={22} color={colors.white} style={styles.infoIconCentered} />
-  <Text style={styles.infoTextCentered}>demo@gmail.com</Text>
-</View>
+        <View style={styles.infoBlock}>
+          <Ionicons name="mail" size={22} color={colors.white} style={styles.infoIconCentered} />
+          <Text style={styles.infoTextCentered}>demo@gmail.com</Text>
+        </View>
 
-<View style={styles.infoBlock}>
-  <Ionicons name="location" size={22} color={colors.white} style={styles.infoIconCentered} />
-  <Text style={styles.infoTextCentered}>
-    132 Dartmouth Street Boston, Massachusetts 02156 United States
-  </Text>
-</View>
+        <View style={styles.infoBlock}>
+          <Ionicons name="location" size={22} color={colors.white} style={styles.infoIconCentered} />
+          <Text style={styles.infoTextCentered}>
+            132 Dartmouth Street Boston, Massachusetts 02156 United States
+          </Text>
+        </View>
 
         {/* Social Icons */}
         <View style={styles.socialRow}>
@@ -90,6 +93,13 @@ export default function HelpSupportScreen({ navigation }) {
           <Text style={styles.submitText}>Submit</Text>
         </TouchableOpacity>
       </View>
+
+      <MenuScreen
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        navigation={navigation}
+      />
+
     </ScrollView>
   );
 }
@@ -126,21 +136,21 @@ const styles = StyleSheet.create({
     height: 35,
   },
   /* CONTACT INFO STYLES */
-contactSection: {
-  backgroundColor: colors.black,
-  padding: spacing.lg,
-  borderRadius: 16,              
-  marginHorizontal: spacing.xl,  
-  alignItems: 'center',  
-  width:333,
-  height:371,        
-},
+  contactSection: {
+    backgroundColor: colors.black,
+    padding: spacing.lg,
+    borderRadius: 16,
+    marginHorizontal: spacing.xl,
+    alignItems: 'center',
+    width: 333,
+    height: 371,
+  },
 
   contactTitle: {
     fontFamily: fonts.semiBold,
     fontSize: 20,
     color: colors.white,
-    
+
   },
   contactSubtitle: {
     fontFamily: fonts.regular,
@@ -149,20 +159,20 @@ contactSection: {
     marginBottom: spacing.md,
   },
   infoBlock: {
-  alignItems: 'center',
-  marginBottom: spacing.md,
-},
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
 
-infoIconCentered: {
-  marginBottom: spacing.md,
-},
+  infoIconCentered: {
+    marginBottom: spacing.md,
+  },
 
-infoTextCentered: {
-  fontFamily: fonts.regular,
-  fontSize: 14,
-  color: colors.white,
-  textAlign: 'center',
-},
+  infoTextCentered: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: colors.white,
+    textAlign: 'center',
+  },
 
   socialRow: { flexDirection: 'row', marginTop: spacing.md },
   socialIcon: { marginRight: spacing.md },
@@ -208,5 +218,21 @@ infoTextCentered: {
     fontFamily: fonts.semiBold,
     fontSize: 16,
     color: colors.white,
+  },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    marginTop: spacing.xl,
+  },
+  headerIcon: { padding: spacing.md },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: fonts.medium,
+    fontSize: 18,
+    color: colors.primary,
   },
 });
